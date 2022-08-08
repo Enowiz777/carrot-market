@@ -124,4 +124,62 @@ divide-y-2 to create a border below
 
 # Profile page
 
-- 
+- Create sub pages of
+bought, loved, sold
+
+# Create live screen
+
+- People will see the current livestream. 
+
+# Create live
+
+- People watch videos.
+
+# Finish creating a live stream.
+
+- You create livestream detail ver similar to the product. 
+
+# Layout fix
+
+- If the screen gets too big, it becomes too ugly - extended or stretched all the way.
+- Can be controlled with the app.tsx
+- You can create another div surround the curren prop and you can set
+```ts
+// Set max width
+// 
+w-full max-w-xl mx-auto
+```
+
+- Create title and navigation bar.
+- Create a folder called Component/layout
+components/layout:
+```ts
+import React from "react";
+import { cls } from "../libs/utils";
+
+interface LayoutProps {
+  title?: string;
+  canGoBack?: boolean;
+  hasTabBar?: boolean;
+  children: React.ReactNode;
+}
+
+export default function Layout({
+  title,
+  canGoBack,
+  hasTabBar,
+  children,
+}: LayoutProps) {
+  return (
+    <div>
+      <div className="bg-white w-full text-lg font-medium py-3 fixed text-gray-800 border-b top-0 justify-center flex items-center">
+        {title ? <span>{title}</span> : null}
+      </div>
+      <div className={cls("pt-16", hasTabBar ? "pb-16" : "")}>{children}</div>
+      {hasTabBar ? (
+        <nav className="bg-white text-gray-800 border-t fixed bottom-0 pb-10 pt-3 flex justify-between items-center"></nav>
+      ) : null}
+    </div>
+  );
+}
+```

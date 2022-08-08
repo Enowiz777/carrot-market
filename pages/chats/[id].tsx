@@ -160,16 +160,6 @@ const ChatDetail: NextPage = () => {
           </div>
         </div>
       </div>
-
-    
-          
-            
-    
-
-          
-    
-    
-  
     </div>
   );
 };

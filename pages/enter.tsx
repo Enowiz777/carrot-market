@@ -1,8 +1,7 @@
 import type { NextPage } from "next";
 import { useState } from "react";
-function cls(...classnames: string[]) {
-  return classnames.join(" ");
-}
+import { cls } from "../libs/utils";
+
 const Enter: NextPage = () => {
   const [method, setMethod] = useState<"email" | "phone">("email");
   const onEmailClick = () => setMethod("email");
@@ -62,16 +61,6 @@ const Enter: NextPage = () => {
                   type="number"
                   className="appearance-none w-full px-3 py-2 border border-gray-300 rounded-md rounded-l-none shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                   required
-
-    
-          
-            
-    
-
-          
-    
-    
-  
                 />
               </div>
             ) : null}
