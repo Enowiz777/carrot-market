@@ -107,6 +107,17 @@ Path: pages/items/upload.tsx
 pages/community/index
 - People will go into community and see IDs. 
 
-# Create community detail (profile page)
+20220808
 
+# Chats page
+divide-y-2 to create a border below
+
+# Chat Detail
+- Create a detail page in the chat by doing pages/chat/[id].tsx
+- TailwindCSS used:
+- w-6
+- h-6
+- space-x-reverse (reverse the position)
+- bottom=0 - put div in the bottom.
+- absolute - container father needs to be relative.
 - 
