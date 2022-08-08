@@ -121,3 +121,7 @@ divide-y-2 to create a border below
 - bottom=0 - put div in the bottom.
 - absolute - container father needs to be relative.
 - 
+
+# Profile page
+
+- 
