@@ -463,5 +463,3 @@ Local address to connect your application: 127.0.0.1:60762 (press ctrl-c to quit
 DATABASE_URL="mysql://127.0.0.1:60762/carrot-market"
 # Format: <db type>://<url>/<name of the db>
 ```
-
-dfadsfdsafdfsa
