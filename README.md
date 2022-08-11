@@ -463,4 +463,166 @@ Local address to connect your application: 127.0.0.1:60762 (press ctrl-c to quit
 DATABASE_URL="mysql://127.0.0.1:60762/carrot-market"
 # Format: <db type>://<url>/<name of the db>
 ```
-hello
+
+## 2.4 Push to PlanetScale
+
+- Prisma looks at shcema.prisma for two things:
+1. Take model and push to your database and perform SQL migration.
+2. Create a client so that you can talk to the DB. 
+3. Add types and autocomplete to the client. 
+
+- Need to add two lines of code before you push. 
+  - planetscale is mySQL compatible. 
+  - There are couple of things that they do differently. 
+
+- Vitess takes a lot of data > There are couple of thing sthat mySQL does that Vitess doesn't. 
+1. Foreign key constraint. 
+*What is FKC?*
+- If we were to create a comment for Users DB
+It will get to the User DB with UID and then add in the comment DB. 
+- In normal mySQL and postSQL, if you want to create a forign key the forieng key here exist. 
+
+- Vitess focuse on scaling and breaking down and storing. They do not check if the user exist before the comment is added. 
+
+- We would like to get some help, if the db is not oging to help us, prisma will help us notify whether the user exist or not. 
+
+schema.prisma:
+```js
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
+}
+```
+- Now we are ready to push schema.prism ato planetScale. 
+*How do you push to planetscale?*
+```ps1
+npx prisma db push
+<#
+Output:
+✔ Generated Prisma Client (4.2.1 | library) to .\node_modules\@prisma\client in 68ms
+#>
+```
+
+- You can confirm whether the schema has been pushed or not from the planetscale website.
+PlanetScale > open DB > Branches tab > click main branch > click schema tab.
+
+## 2.5 Prisma Client
+
+Admin Panel:
+```
+npx prisma studio
+```
+- You click user, and it is ready to receive users and its properties. 
+- With admin panel, you can create your first user. (input data inside.)
+- 
+
+*How do you use primsa client?*
+
+
+- Initialize client
+Steps:
+1. install @prisma/client
+```
+npm i @prisma/client
+```
+2. Import @prisma/client from lib/client.ts
+libs/create client.ts:
+```
+import { PrismaClient } from "@prisma/client";
+
+// export default 
+const client = new PrismaClient();
+
+client.user.create({
+  data: {
+    email: "hi",
+    name: "hi",
+  },
+});
+```
+
+3. Generate a client
+```ps1
+npx prisma generate
+# ✔ Generated Prisma Client (4.2.1 | library) to .\node_modules\@prisma\client 
+```
+- you can confirm this info by going into the path that it is generated inside the node_modules.
+
+\node_modules\@prisma\client
+```
+/**
+ * Model User
+ * 
+ */
+export type User = {
+  id: number
+  phone: number | null
+  email: string | null
+  name: string
+  avatar: string | null
+  createdAt: Date
+  updatedAt: Date
+}
+
+```
+- Prisma looks at our schema and it generated a client. 
+
+In conclusion:
+Prisma is helping with three things:
+1. Prisma modifies our db implementation.
+2. Provide an Admin panel
+3. Creates TypeScript type for client for auto-completion.
+
+You can modify the user by using the auto-complete. 
+ex:
+```
+client.user.create({data: {
+  email: 13
+  ......
+}})
+```
+
+- We shouldn't be able to run the prisma client form a browser. 
+- IT ONLY RUN SERVER. 
+
+## 2.6 API Routes.
+
+
+**Since I can't run the prisma client on the browser, how can I run it?**
+
+- Create front end - ReactJS
+- Backend - NodeJS, GraphQL
+
+
+- Next JS doesn't need to have another server to make your own API. 
+- NextJS can make front end
+
+- Create new folder called api in the page. 
+
+*20220810- I notice that the folder is already there.*
+client-test.tsx
+```ts
+import { NextApiRequest, NextApiResponse } from "next";
+import client from "../../libs/client";
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  await client.user.create({
+    data: {
+      email: "hi",
+      name: "hi",
+    },
+  });
+  res.json({
+    ok: true,
+  });
+}
+```
+
+- If you just put in the localhost:3000/api/client-test
+- It will just start the API. 
+- This is like a 
+- API route is where we are going to talk to the DB. 
+- 
