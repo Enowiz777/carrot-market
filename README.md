@@ -626,3 +626,380 @@ export default async function handler(
 - This is like a 
 - API route is where we are going to talk to the DB. 
 - 
+
+Summary:
+- Use Prisma, PlanetScale, API routes. 
+- Recap
+1. Create schema.prisma: configure prisma and explain prisma how our data is going to look like. 
+2. npm prisma db push - push db schema to database. 
+3. we have to create a secure tunnel and we put the url into the DATABASE_URL inside .env file. 
+- PUt the secure connection to .env file.
+4. prisma db push: explanation to in prisma and prisma is going to put them in PlanetScale. 
+5. Prisma offers super good admin panel. 
+6. We generate client
+- Client is where you can talk to the DB. 
+- Server needs to talk to DB. 
+- Prisma gives nice client. 
+- It comes form npm module. This has the typescript type based on the schema. 
+- NextJS can create API route within the framework. 
+- Usually, we have to creat the API route in the back-end. 
+Created it under api folder. 
+
+- JWT or cookies.
+
+# 3. React hook form
+
+- Form without help would be very annoying. 
+- You have to eventhandling, error, change error message etc. 
+- We have a lot of forms. 
+- React hook form allows you to build form with validation and events that you need with minimal code. 
+- This is amazin package. 
+- The moment you dominate react form, it takes 5 minutes to implement form.
+
+
+# 3.1 Making form alone
+
+- npm install reacthookform.
+- Problem. React-hook form with react 16 or 17. 
+```
+npm i react-hook-form
+```
+- We add the --legacy-peer-deps next to the npm i to avoid error. 
+```
+npm i react-hook-form --legacy-peer-deps
+```
+
+*How do you create a form?*
+
+pages/form.tsx
+```
+export default function Forms() {
+	return (
+		<form>
+		
+	
+	);
+
+}
+```
+
+Steps:
+
+1. Without react form we create three states. We connect state with inputs. 
+
+2. WE give them default value of empty string
+3. Listen to the own change event
+```
+import { useState } from "react";
+
+export default function Forms() {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [formErrors, setFormErrors] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const onUsernameChange = (event: React.SyntheticEvent<HTMLInputElement>) => {
+    const {
+      currentTarget: { value },
+    } = event;
+    setUsername(value);
+  };
+  const onEmailChange = (event: React.SyntheticEvent<HTMLInputElement>) => {
+    const {
+      currentTarget: { value },
+    } = event;
+    setEmailError("");
+    setEmail(value);
+  };
+  const onPasswordChange = (event: React.SyntheticEvent<HTMLInputElement>) => {
+    const {
+      currentTarget: { value },
+    } = event;
+    setPassword(value);
+  };
+  const onSubmit = (event: React.SyntheticEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (username === "" || email === "" || password === "") {
+      setFormErrors("All fields are required");
+    }
+    if (!email.includes("@")) {
+      setEmailError("email is required");
+    }
+  };
+  return (
+    <form onSubmit={onSubmit}>
+      <input
+        value={username}
+        onChange={onUsernameChange}
+        type="text"
+        placeholder="Username"
+        required
+        minLength={5}
+      />
+      <input
+        value={email}
+        onChange={onEmailChange}
+        type="email"
+        placeholder="Email"
+        required
+      />
+      {emailError}
+      <input
+        value={password}
+        onChange={onPasswordChange}
+        type="password"
+        placeholder="Password"
+        required
+      />
+      <input type="submit" value="Create Account" />
+    </form>
+  );
+}
+```
+
+- Remember that user needs to submit a form. 
+
+- We can change three react synthetic event to one function. 
+- But to make a long story short, these are too much work that we are doing. 
+- If we only has HTML validation, users can go to inspect and change the HTML to change the required and take different types. 
+- Therefore, we do need a separate validation. 
+	- We have to think about error. 
+	- Validation example:
+```js
+const onSubmit = (event: React.SyntheticEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (username === "" || email === "" || password === "") {
+      setFormErrors("All fields are required");
+    }
+    if (!email.includes("@")) {
+      setEmailError("email is required");
+    }
+  };
+ // What if the email doesn't include @
+ // What if the email field is empty.
+ // min length how big it is all these parts, you have to do it. 
+```
+- There are many things > 
+	- show error. 
+	- input type
+	- invalid
+	- Red
+	- Do validation of what the user has typed. 
+	- All these things are so many implementation by ourselves. 
+	
+# 3.2. Take all the forms into a React hook Form
+
+- Create a wishlist for a form component. 
+1. Less Code
+2. Control over validation
+3. Have control over inputs. 
+4. Have State control.
+
+pages/forms.tsx
+```tsx
+// import useForm
+import { useForm } from "react-hook-form";
+
+// Less code (c)
+// Better validation
+// Better Erros (set, clear, display)
+// Have control over inputs
+// Dont deal with events (c)
+// Easier Inputs (c)
+
+export default function Forms() {
+  // create useForm (register)
+  const { register } = useForm();
+  return (
+    <form>
+      <input
+        {...register("username")}
+        type="text"
+        placeholder="Username"
+        required
+      />
+      <input {...register("email")} type="email" placeholder="Email" required />
+      <input
+        {...register("password")}
+        type="password"
+        placeholder="Password"
+        required
+      />
+      <input type="submit" value="Create Account" />
+    </form>
+  );
+}
+```
+
+- watch allows you to watch the code. 
+- basically, it will keep track of any changes made on the input.
+
+# 3.3 Validation
+
+- Maybe the browser doesn't support required.
+- You want to check using JavaScript and validate its function. 
+- You can write out a validation using {required:true}
+
+```tsx
+import { useForm } from "react-hook-form";
+
+// Better validation
+// Better Erros (set, clear, display)
+// Have control over inputs
+
+export default function Forms() {
+  const { register, handleSubmit } = useForm();
+  const onValid = () => {
+    console.log("im valid bby");
+  };
+  return (
+    <form onSubmit={handleSubmit(onValid)}>
+      <input
+        {...register("username", {
+          required: true,
+        })}
+        type="text"
+        placeholder="Username"
+      />
+      <input
+        {...register("email", { required: true })}
+        type="email"
+        placeholder="Email"
+      />
+      <input
+        {...register("password", { required: true })}
+        type="password"
+        placeholder="Password"
+      />
+      <input type="submit" value="Create Account" />
+    </form>
+  );
+}
+```
+handleSubmit(onValid): take two functions from you.
+1. function that will be executed if your form is valid. 
+2. another function that will be called onSubmit={}
+
+- You do not need to validate individually but it will handle all validations for you.
+
+- There are pre-written rules that are common for most forms and it will implement that for you. Once you know what is being checked, you can add separate validations if needed. 
+
+- Validation continued......
+
+- If you hover your mouse over, you will see what are options that we get. 
+- options are min, max, maxLength, minLength, there are some. These are supported in HTML. 
+
+
+```tsx
+import { FieldErrors, useForm } from "react-hook-form";
+
+// Better validation
+// Better Erros (set, clear, display)
+// Have control over inputs
+
+interface LoginForm {
+  username: string;
+  password: string;
+  email: string;
+}
+
+export default function Forms() {
+  const { register, handleSubmit } = useForm<LoginForm>();
+  // onValid > prints "im valid bby"
+  const onValid = (data: LoginForm) => {
+    console.log("im valid bby");
+  };
+  // onInvalid > print errors. 
+  const onInvalid = (errors: FieldErrors) => {
+    console.log(errors);
+  };
+  return (
+    // Instead of putting required "true," you can write the error message that users will see.
+    <form onSubmit={handleSubmit(onValid, onInvalid)}>
+      <input
+        {...register("username", {
+          required: "Username is required",
+          minLength: {
+            message: "The username should be longer than 5 chars.",
+            value: 5,
+          },
+        })}
+        type="text"
+        placeholder="Username"
+      />
+      <input
+        {...register("email", { required: "Email is required" })}
+        type="email"
+        placeholder="Email"
+      />
+      <input
+        {...register("password", { required: "Password is required" })}
+        type="password"
+        placeholder="Password"
+      />
+      <input type="submit" value="Create Account" />
+    </form>
+  );
+}
+```
+
+minLength {set up length, and message for users}
+Two options:
+1. Write the value of your rule.
+```
+minLength: 5
+```
+2. Write the message (threw when the rule is broken.) along with the rule. 
+```
+minLength: {
+  message: "The username should be longer than 5 chars.",
+  value: 5,
+},
+```
+
+# 3.4 Errors
+
+- We figured out that we have browser validation that is given in HTML. 
+- If you want to create a custom validation, you can do this. 
+
+```
+<input
+ {...register("email"), {
+    required: "Email is required",
+    validate: {
+      notGmail: (value => !value.include("@gmail.com"),
+      },
+ })}
+ ......
+>
+```
+
+- You can even get the email error and display to the front-end. 
+  - retrieve an error 
+  - make the error goes away. 
+
+- Validation patterns
+1. When the user submits, validation happens. 
+2. When the user types. 
+
+- There are some website that immediately let the user know as they type. (Turn green)
+
+- Change the border depending on the state of the form. 
+```tsx
+// If the error message exists, it will change the border-red-500.
+<input
+  className={`${Boolean(errors.email?.message) ? "border-red-500"}`}
+>
+```
+
+# 3.5 Extras
+
+- Path: react-hook-form.com
+- Please look at the documentation
+
+Functions:
+1. watch("email"): watch email input from the form.
+2. clearErrors. 
+3. setErrors: if you submit to a back-end, you get an error, and you want to show that error. 
+4. reset
+5. resetField.
