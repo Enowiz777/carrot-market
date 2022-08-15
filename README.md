@@ -3,28 +3,23 @@
 # Requirements:
 
 1. NextJS
-- NextJS will come with below apps:
-    a. React, React-DOM, NextJS
-
+- NextJS: Apps React, React-DOM, NextJS
 *How do you install NextJS?*
 ```js
 // for typescript
 npx create-next-app@latest --typescript
 ```
 
-
-2. TaileindCSS
+2. TailwindCSS
 
 *How do you install?*
-
 Steps:
-
-a. install tailwindcss, postcss, autoprefixer.
+a. Install tailwindcss, postcss, autoprefixer.
 ```
 npm install -D tailwindcss postcss autoprefixer
 ```
 
-b. initiate tailwindcss
+b. Initiate tailwindcss
 ```bash
 npx tailwindcss init -p
 : << 'COMMENT'
@@ -72,8 +67,8 @@ npm run dev
 ```
 npm i @tailwindcss/forms
 ```
-- Modify tailwind.config.js to use it
 
+- Modify tailwind.config.js to use it
 ```js
 module.exports = {
   content: [
@@ -86,60 +81,50 @@ module.exports = {
   darkMode: "media", // class
   plugins: [require("@tailwindcss/forms")],
 };
-
 ```
 
-# Item Detail page
+# 1. Create pages with TailwindCSS
 
-- If you were to create item pages url, you just need to create a bracket around.
+## a. Create unique pages
+- If you were to create item pages url, you just need to create a bracket around. ([id].tsx)
 
-# Build upload screen
 
+## b. Build upload screen
 - You can just add below path and it will create the path in NextJS.
 Path: pages/items/upload.tsx
-
-
 - File choosing technique
 
 
-# Create Community page
-
+## c. Create Community page
 pages/community/index
 - People will go into community and see IDs. 
 
-20220808
-
-# Chats page
+## d. Chats page
 divide-y-2 to create a border below
 
-# Chat Detail
+## e. Chat Detail
 - Create a detail page in the chat by doing pages/chat/[id].tsx
 - TailwindCSS used:
 - w-6
 - h-6
 - space-x-reverse (reverse the position)
-- bottom=0 - put div in the bottom.
+- bottom = 0 - put div in the bottom.
 - absolute - container father needs to be relative.
-- 
 
-# Profile page
-
+## f. Profile page
 - Create sub pages of
 bought, loved, sold
 
-# Create live screen
-
+## g. Create live screen
 - People will see the current livestream. 
 
-# Create live
-
+## h. Create live
 - People watch videos.
 
-# Finish creating a live stream.
-
+## i. Finish creating a live stream.
 - You create livestream detail ver similar to the product. 
 
-# Layout fix
+## j. Layout fix
 
 - If the screen gets too big, it becomes too ugly - extended or stretched all the way.
 - Can be controlled with the app.tsx
@@ -1003,3 +988,239 @@ Functions:
 3. setErrors: if you submit to a back-end, you get an error, and you want to show that error. 
 4. reset
 5. resetField.
+
+# 4. Refactoring
+
+# 4.1 Enter Form
+
+- Create interface options because there are two ways to login
+Input:
+```js
+interface EnterForm {
+  email?: string;
+  phone?: string;
+}
+```
+
+- Depending on user's preference, we give different input tags.
+```
+   {method === "email" ? (
+            <Input
+              register={register("email", {
+                required: true,
+              })}
+              name="email"
+              label="Email address"
+              type="email"
+              required
+            />
+          ) : null}
+          {method === "phone" ? (
+            <Input
+              register={register("phone")}
+              name="phone"
+              label="Phone number"
+              type="number"
+              kind="phone"
+              required
+            />
+          ) : null}
+```
+
+- When we click submit, the input data remains. In order to clear the form, you use reset() to clear inputs.
+```
+  const onPhoneClick = () => {
+    reset();
+    setMethod("phone");
+  };
+```
+- Onvalid, accept data.
+```
+  const onValid = (data: EnterForm) => {
+    console.log(data);
+  };
+```
+
+- shorcut: [key: string]: any; (allows to send any props to components)
+
+
+- useFormRegisterReturn
+- 
+```
+```
+
+# 4.2. Form Submission
+
+- Create POST request.
+pages/api/users/enter.tsx
+```js
+import { NextApiRequest, NextApiResponse } from "next";
+import client from "../../../libs/client";
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method !== "POST") {
+    // status of bad request
+    res.status(401).end();
+  }
+  console.log(req.body.email);
+  res.status(200).end();
+}
+```
+
+- Show on the page
+- ONvalid, it will call the API fetch.
+
+pages/enter.tsx
+```js
+
+const Enter: NextPage = () => {
+  const [submitting, setSubmitting] = useState(false);
+  const { register, handleSubmit, reset } = useForm<EnterForm>();
+  const [method, setMethod] = useState<"email" | "phone">("email");
+  const onEmailClick = () => {
+    reset();
+    setMethod("email");
+  };
+  const onPhoneClick = () => {
+    reset();
+    setMethod("phone");
+  };
+  const onValid = (data: EnterForm) => {
+    setSubmitting(true);
+    fetch("/api/users/enter", {
+      method: "POST",
+      body: JSON.stringify(data),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }).then(() => {
+      setSubmitting(false);
+    });
+  };
+  return (
+    ......
+  )
+
+```
+
+- What does the API return?
+For now, you just make sure that you are getting success or failure.
+
+- If you read the documentation, req.body gets encoded based on the encoding of req.
+
+- utility functions will help us make our lives better.
+
+Steps:
+1. Fetch - Post
+2. Post - Stringify
+3. Set Content-Type.
+4. Users - we are submitting or not
+5. We have to error response if the status is not what we want. 
+6. SWR - get data, cache data, mutate data. 
+POST - we need to have our own cutom function. 
+
+# 4.3 Clean Code
+
+- Create  client/useMutation.tsx
+- Put in hook. 
+What is the best developer
+What are you going to do?
+1. Receive an array from my hook. 
+pages/enter.tsx
+```tsx
+// receive an array from my hook.
+const [enter, { loading, data, error }] = useMutation("/api/users/enter");
+```
+POST means you send data to the BE, which means you can mutate the status of DB. 
+enter function triggers the posting.
+second arg is notification. You want to receive an object.
+onValid -> enter() function -> add the whole data (...data)
+This is the developer experience that Nico wants. 
+useMutation needs to know what url that you are going to mutate. 
+"/api/users/enter"
+
+- Function and objects.
+
+- useMutation development:
+
+```tsx
+export default function useMutation(url:string) {
+	const [loading, setLoading] = useState(false);
+	const [data, setData] = useState<undefined |any>(undefined)
+	const [error, setError] = use
+	function mutation(data:any) {}
+	return [mutation, ]
+
+}
+
+```
+
+- Implement useMutation function
+
+Steps:
+We receive url from the user and we want to notify users when it is loading, if there is data or error. 
+Steps:
+1. SetLoading(true)
+2. fetch (url, method:"POST"
+3. Send headers to content-Type application json. 
+4. body - json stringify.
+5. Return json response - catch - receive json. 
+6. 
+
+- This is a short code to create a POST request.
+- You can create a state and make it into an object. 
+- 
+
+# 4.4 withHandler
+
+- Make a funciton that makes eaiser to write a handler. 
+Replace below:
+```
+  if (req.method !== "POST") {
+    res.status(401).end();
+  }
+```
+
+- Handler is the one that handles the view. 
+- We have to export default the function.
+- Whatever code that we make has to return a function that NextJS is going to export. 
+- Export default withHandler
+```js
+export default withHandler("POST", handler);
+// First arg: method
+// recieve the function that you want to execute. 
+```
+- NextJS likes to have return and sync. 
+- We want to retun what NextJS execute. 
+- We are going to retun a function that what nextJS is returning. 
+- localhost/users/api -> You get hello.
+- When we call a withhandler function, returns a handler and handler gets executed.
+
+1. Withhandler runs > replace the code > instead of function you are running the handler. 
+```
+export default withHandler("POST", handler); 
+->
+import { NextApiRequest, NextApiResponse } from "next";
+
+export default function withHandler(
+  method: "GET" | "POST" | "DELETE",
+  fn: (req: NextApiRequest, res: NextApiResponse) => void
+) {
+  return async function (req: NextApiRequest, res: NextApiResponse) {
+    if (req.method !== method) {
+      return res.status(405).end();
+    }
+    try {
+      await fn(req, res);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error });
+    }
+  };
+}
+->
+
+```
