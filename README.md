@@ -1224,3 +1224,66 @@ export default function withHandler(
 ->
 
 ```
+
+Steps to build withHandler
+1. create a function that takes req, res
+```
+export default function withHandler(
+  method: "GET" | "POST" | "DELETE",
+  fn: (req)
+)
+```
+- Call withHander -> return another function below
+```js
+async function (req: NextApiRequest, res: NextApiResponse) {
+    if (req.method !== method) {
+      return res.status(405).end();
+    }
+    try {
+      await fn(req, res);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error });
+    }
+  };
+```
+
+- withHandler is just a shell. 
+
+# 4.5 Paths
+
+- If you don't want to see "../../...," you can set the path in the tsconfig.json. 
+
+Steps:
+1. Create paths in the tsconfig.json
+```
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@libs/*": ["libs/*"],
+      "@components/*": ["components/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}
+```
+
+2. use @<key word> to replace all ../ that leads to a particular folder that you want. 
+
+3. 
