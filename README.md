@@ -1286,4 +1286,193 @@ Steps:
 
 2. use @<key word> to replace all ../ that leads to a particular folder that you want. 
 
-3. 
+
+
+# 5. Authentication
+
+## 5.1 Introduction
+
+We are going to create an authentication
+
+Steps:
+1. User sends a phone number that they have.
+2. Front-end (mutation function)
+3. Back-end: look for the user based on a phone number
+- If exist, we bring it out from the DB.
+- If not, we create a new account. 
+4. User will get a passcode (We use Twilio platform to accomplish this) (SMS)
+5. User will receive a token in their phone number. After you get a phone number.
+6. User will input a token number. We will take it into a backend and Log the user in after we authenticate.
+
+==Optional==
+7. If you are not logged in, you are not able to see that page. 
+8. API function -> Learn how to get the information about the user in the request.
+
+Authenticcation: Learn who the user is.
+Authorization: Check if the user is allowed to see what they are going to see. 
+
+# 5.1 Accounts Logic
+
+Steps:
+1. We are going to start with API.
+pages/api/users/enter.tsx
+```js
+import { NextApiRequest, NextApiResponse } from "next";
+import withHandler from "@libs/server/withHandler";
+import client from "@libs/server/client";
+
+
+async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const {phone, email} = req.body;
+  // if the email provided is there, we get it from the DB.
+  if(email){
+    const user = await client.user.findUnique({
+        where: {
+          email,
+        }
+    });
+    if (!user) {
+      await client.user.create({
+        data {
+          name: "Anonymous",
+          email,
+        },
+      });
+    }
+    console.log(user);
+  }
+  return res.status(200).end();
+}
+
+export default withHandler("POST", handler);
+```
+
+- Before you test your code, run psscale. 
+- Quick convert to numbers = +
+- ursert: update if eixst; create if doesn't exist. 
+```js
+  const user = await client.user.upsert({
+    where: {
+      ...payload,
+    },
+    create: {
+      name: "Anonymous",
+      ...payload,
+    },
+    update: {},
+  });
+  console.log(user);
+```
+- ES6 feature: if..else inside the object.
+```js
+// if the phone number is there, we return 
+  where: {
+    ...(phone ? {phone:+phone}:{}),
+    ...(email ? {email}: {}),
+  }
+```
+More shortcut:
+```js
+  const payload = phone ? { phone: +phone } : { email };
+  const user = await client.user.upsert({
+    where: {
+      ...payload,
+    },
+
+```
+
+# 5.2 Token logic
+
+You can set up a token logic inside the schema.prisma.
+prisma/schema.prisma
+```js
+......
+
+model User {
+  id        Int      @id @default(autoincrement())
+  phone     Int?     @unique
+  email     String?  @unique
+  name      String
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tokens    Token[]
+}
+
+model Token {
+  id        Int      @id @default(autoincrement())
+  payload   String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+```
+
+- After you created a shema, you have to push to the db. 
+```
+npx prisma db push
+```
+
+- Check on the planetScale console whether the token is applied or not.
+
+- Our db is ready to handle tokens. 
+
+pages/api/users/enter.tsx
+```js
+
+```
+
+- You can view whether the token is generated or not from the planetScale studio.
+- createOrCreate: if the user with the specification already exist, please connect to the token. If the user with the specification doesn't exist, please create with those properties and connect to the token. 
+
+- Payload should be unique. If you try to run the code, payload will not be unique.
+- 
+
+# 5.3 Twilo Setup
+
+- Payload token random generator added. 
+- Twilo: we have a trial for $15 trail
+	- Create a messaging service. 
+- Twilio_SID needs to be included in the env.
+- Messaging > services > new messaging service "carrot-market" > Use this to notify the users. 
+- Try it out > Get set up > Tell us this messaging service, we need to buy a phone number. 
+- SMS - API request that you need to make to send messages. 
+- There are ID, bodytext inputs and you can send SMS messages.
+
+# 5.4 Sending SMS
+
+- You have to get Account SID and Auth token. 
+- You have to click the name of the account and it will take you to the dashbaords. 
+- Copy paste SID to env file.  
+- There are four things to get this ready:
+1. SID
+2. Token
+3. Messaging Service SID
+4. Phone number to github or put it under .env file. 
+
+Steps to set up Twilo SDK:
+1. await twilioClient.messages.create({})
+2. 
+pages/api/users/enter.tsx
+```js
+import twilio from "twilio";
+import { NextApiRequest, NextApiResponse } from "next";
+import withHandler, { ResponseType } from "@libs/server/withHandler";
+import client from "@libs/server/client";
+
+const twilioClient = twilio(process.env.TWILIO_SID, process.env.TWILIO_TOKEN);
+
+  if (phone) {
+    const message = await twilioClient.messages.create({
+      messagingServiceSid: process.env.TWILIO_MSID,
+      to: process.env.MY_PHONE!,
+      body: `Your login token is ${payload}.`,
+    });
+    console.log(message);
+  }
+```
+
+- Twilo needs a country code because it is an international platform. 
+- Make sure to refresh the server once you update .env file. 
+- When you test, you should be able to receive the token that you inputed.
